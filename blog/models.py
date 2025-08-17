@@ -2,7 +2,7 @@ from django.db import models
 from blog.utils import generate_unique_slug
 class BlogPost(models.Model):
     title = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(unique=True,null=True, blank=True, max_length=200)
     content = models.TextField()
     cover_image = models.ImageField(upload_to='blogs/covers/',blank=True, null=True)
     is_published = models.BooleanField(default=False)
@@ -21,14 +21,14 @@ class BlogPost(models.Model):
     def save(self, *args, **kwargs):
     # Generate slug only for new instances when slug is empty
         if not self.slug and not self.pk:
-            self.slug = self.generate_unique_slug()
+            self.slug = generate_unique_slug(self, 'title')
         
         # For existing instances with empty slug (shouldn't happen), restore original slug
         elif not self.slug and self.pk:
             try:
                 self.slug = BlogPost.objects.get(pk=self.pk).slug
             except BlogPost.DoesNotExist:
-                self.slug = self.generate_unique_slug()
+                self.slug = generate_unique_slug(self, 'title')
         
         super().save(*args, **kwargs)
 
