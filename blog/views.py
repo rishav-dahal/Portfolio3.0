@@ -16,15 +16,16 @@ def list_blogs(request):
         return Response(status=status_code , data=serializer.data)
     except Exception as e:
         return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR, message="An error occurred while fetching blog posts: ")
-    
+
+
 @api_view(["POST"])
 def create_blog(request):
     try:
         serializer = BlogPostCreateSerializer(data=request.data)
         if not serializer.is_valid(raise_exception=True): 
             return Response(status=status.HTTP_400_BAD_REQUEST,message="Invalid data")
-
-        return Response(status=status.HTTP_201_CREATED, data=serializer.data)   
+        serializer.save()
+        return Response(status=status.HTTP_201_CREATED, data=BlogPostSerializer(serializer.instance).data)   
     except serializers.ValidationError as e:
         return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": str(e)})
     except Exception as e:
